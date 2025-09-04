@@ -374,6 +374,33 @@ AgendaBeleza/
 - [ ] CI/CD com GitHub Actions
 - [ ] Documentação Swagger/OpenAPI
 - [ ] Monitoramento com Sentry
+ 
+## 🚢 Predeploy & Deploy (Render)
+
+Pequeno guia para preparar o projeto antes de enviar para Render.com (já adicionamos arquivos de apoio):
+
+- Certifique-se de usar a branch que será ligada no painel do Render (por exemplo, `juan`).
+- O repositório já contém:
+  - `render.yaml` (manifest que referencia os serviços e Dockerfiles)
+  - `backend/api/Dockerfile` e `frontend/vite-app/Dockerfile`
+  - Workflow CI: `.github/workflows/ci.yml` (executa testes backend e build frontend)
+
+- Passos recomendados antes do deploy:
+  1. Criar um serviço Postgres no Render e guardar `DATABASE_URL` nas env vars do serviço backend.
+  2. No painel do serviço backend adicionar env vars importantes: `NODE_ENV=production`, `JWT_SECRET`, `FLEXIBLE_SCHEDULING=false`, `DATABASE_URL` (se aplicável), `DB_SSL=true` (se necessário).
+  3. Ajustar `CORS_ORIGIN` no painel para apontar à URL do frontend gerada pelo Render.
+  4. Revisar `CHECKLIST-RENDER.md` na raiz para passos detalhados e verificação pós-deploy.
+
+- Observação importante: O projeto usa sqlite como fallback para desenvolvimento; em produção não é recomendado armazenar dados em sqlite na infra do Render (sistema de arquivos é efêmero). Use Postgres para persistência robusta.
+
+## ✅ Melhorias sugeridas (priorizadas)
+
+1. Migrar dados para Postgres e adicionar scripts/migrations (Sequelize CLI ou um script custom).
+2. Adicionar job de CI que construa imagens Docker e publique em um registry (GHCR/Docker Hub) se precisar de imagens persistentes.
+3. Habilitar monitoramento de erros (Sentry) e logs estruturados (ex.: JSON + Logdrain em Render).
+4. Testes end-to-end (Cypress) para fluxos críticos (agendar, cancelar, login admin).
+5. Política de backup e restore para banco de dados em produção.
+
 
 ---
 

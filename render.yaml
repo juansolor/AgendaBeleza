@@ -1,0 +1,30 @@
+# Render manifest for AgendaBeleza
+# This file declares two services:
+#  - backend: Node web service located in backend/api
+#  - frontend: static site built from frontend/vite-app (dist)
+#
+# Notes:
+# - sqlite is file-based and not recommended for production on Render (ephemeral filesystem).
+#   Consider using Render Postgres and update backend database config accordingly.
+
+services:
+  - type: web
+    name: agenda-beleza-backend
+    plan: free
+    root: backend/api
+    dockerfilePath: backend/api/Dockerfile
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: FLEXIBLE_SCHEDULING
+        value: "false"
+
+  - type: web
+    name: agenda-beleza-frontend
+    plan: free
+    root: frontend/vite-app
+    dockerfilePath: frontend/vite-app/Dockerfile
+    envVars:
+      - key: NODE_ENV
+        value: production

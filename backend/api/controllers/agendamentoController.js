@@ -107,59 +107,58 @@ async function criarAgendamento(req, res) {
       return res.status(400).json({ erro: "Tipo de serviço inválido" });
     }
 
-    // FLEXIBILIDADE IMPLEMENTADA: Permitir qualquer profissional atender qualquer serviço
-    // Comentada a validação rigorosa para maior flexibilidade de agendamento
-    /*
-    // Validate professional's specialty against service type and category
-    const normalizeString = (str) => str.toLowerCase().trim();
-    
-    const profEspecialidade = normalizeString(profissional.especialidade);
-    const tipoServicoNome = normalizeString(tipoServico.nome);
-    const servicoNome = normalizeString(servico.nome);
-    const categoriaNome = categoria ? normalizeString(categoria) : '';
+    // Allow flexible scheduling if explicitly enabled via env var.
+    const FLEXIBLE = process.env.FLEXIBLE_SCHEDULING === 'true';
 
-    // Define related specialties (could be moved to a configuration file)
-    const especialidadesRelacionadas = {
-      'cabelo': ['corte', 'coloração', 'penteado', 'tratamento capilar'],
-      'manicure': ['pedicure', 'unhas', 'esmaltação'],
-      'maquiagem': ['design de sobrancelhas', 'maquiagem artística'],
-      // Add more related specialties as needed
-    };
+    if (FLEXIBLE) {
+      console.log('[AGENDAMENTO] FLEXIBLE_SCHEDULING enabled: skipping specialty validation');
+    } else {
+      // Validate professional's specialty against service type and category
+      const normalizeString = (str) => (str || '').toLowerCase().trim();
 
-    // Check if the professional's specialty matches or is related to the service
-    const isValidSpecialty = 
-      // Direct matches (case-insensitive)
-      profEspecialidade === tipoServicoNome ||
-      profEspecialidade === servicoNome ||
-      (categoria && profEspecialidade === categoriaNome) ||
-      // Check related specialties
-      Object.entries(especialidadesRelacionadas).some(([mainSpecialty, related]) => {
-        const normalizedMainSpecialty = normalizeString(mainSpecialty);
-        if (profEspecialidade === normalizedMainSpecialty) {
-          return related.some(rel => 
-            normalizeString(rel) === tipoServicoNome || 
-            normalizeString(rel) === servicoNome
-          );
-        }
-        if (related.some(rel => normalizeString(rel) === profEspecialidade)) {
-          return normalizedMainSpecialty === tipoServicoNome || 
-                 normalizedMainSpecialty === servicoNome;
-        }
-        return false;
-      });
+      const profEspecialidade = normalizeString(profissional.especialidade);
+      const tipoServicoNome = normalizeString(tipoServico.nome);
+      const servicoNome = normalizeString(servico.nome);
+      const categoriaNome = categoria ? normalizeString(categoria) : '';
 
-    if (!isValidSpecialty) {
-      return res.status(400).json({ 
-        erro: 'Profissional não corresponde à especialidade do serviço',
-        detalhes: `A especialidade do profissional (${profissional.especialidade}) não é compatível com o serviço solicitado (${servico.nome}) do tipo (${tipoServico.nome})${categoria ? ` na categoria (${categoria})` : ''}. Por favor, escolha um profissional com a especialidade adequada.`
-      });
+      // Define related specialties (could be moved to a configuration file)
+      const especialidadesRelacionadas = {
+        'cabelo': ['corte', 'coloração', 'penteado', 'tratamento capilar'],
+        'manicure': ['pedicure', 'unhas', 'esmaltação'],
+        'maquiagem': ['design de sobrancelhas', 'maquiagem artística'],
+        // Add more related specialties as needed
+      };
+
+      // Check if the professional's specialty matches or is related to the service
+      const isValidSpecialty =
+        // Direct matches (case-insensitive)
+        profEspecialidade === tipoServicoNome ||
+        profEspecialidade === servicoNome ||
+        (categoria && profEspecialidade === categoriaNome) ||
+        // Check related specialties
+        Object.entries(especialidadesRelacionadas).some(([mainSpecialty, related]) => {
+          const normalizedMainSpecialty = normalizeString(mainSpecialty);
+          if (profEspecialidade === normalizedMainSpecialty) {
+            return related.some(rel =>
+              normalizeString(rel) === tipoServicoNome ||
+              normalizeString(rel) === servicoNome
+            );
+          }
+          if (related.some(rel => normalizeString(rel) === profEspecialidade)) {
+            return normalizedMainSpecialty === tipoServicoNome ||
+                   normalizedMainSpecialty === servicoNome;
+          }
+          return false;
+        });
+
+      if (!isValidSpecialty) {
+        return res.status(400).json({
+          erro: 'Profissional não corresponde à especialidade do serviço',
+          detalhes: `A especialidade do profissional (${profissional.especialidade}) não é compatível com o serviço solicitado (${servico.nome}) do tipo (${tipoServico.nome})${categoria ? ` na categoria (${categoria})` : ''}. Por favor, escolha um profissional com a especialidade adequada.`
+        });
+      }
+      console.log('[AGENDAMENTO] Validação de especialidade PASSOU');
     }
-    */
-
-    console.log('[AGENDAMENTO] Validação de especialidade DESABILITADA para maior flexibilidade');
-    console.log(`[AGENDAMENTO] Profissional: ${profissional.nome} (${profissional.especialidade})`);
-    console.log(`[AGENDAMENTO] Serviço: ${servico.nome} (Tipo: ${tipoServico.nome})`);
-    console.log('[AGENDAMENTO] ✅ Permitindo agendamento flexível');
 
     // منع الحجز المكرر للمصفف بنفس الوقت
     const agendamentoExistente = await Agendamento.findOne({

@@ -115,6 +115,11 @@ ensureAdmin();
 const PORT = process.env.PORT || 3000;
 console.log("Ambiente:", process.env.NODE_ENV);
 
+// Health endpoint for Render and uptime probes
+app.get('/health', (req, res) => {
+  return res.status(200).json({ status: 'ok' });
+});
+
 // Só inicia o servidor se não estiver em ambiente de teste
 if (process.env.NODE_ENV !== 'test') {
   app.listen(PORT, () => {
