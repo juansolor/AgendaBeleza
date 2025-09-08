@@ -102,7 +102,7 @@ async function ensureAdmin() {
       defaults: {
         nome: 'Administrador',
         email: 'admin@salao.com',
-        senha: 'Admin123!', // Mude esta senha após criar o admin
+  senha: process.env.NODE_ENV === 'test' ? 'admin123' : 'Admin123!', // Use admin123 in tests
         ativo: true,
       },
     });

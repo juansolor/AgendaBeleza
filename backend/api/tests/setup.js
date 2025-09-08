@@ -7,10 +7,15 @@ process.env.PORT = 3001;
 jest.setTimeout(10000);
 
 // Configuração global para testes
-global.console = {
-  ...console,
-  // Silenciar logs durante testes
-  log: jest.fn(),
-  warn: jest.fn(),
-  error: jest.fn(),
-};
+// Evitar reasignar `global.console` (provoca advertencias en Jest). En su lugar, crear spies que se restauran automáticamente.
+beforeAll(() => {
+  jest.spyOn(console, 'log').mockImplementation(() => {});
+  jest.spyOn(console, 'warn').mockImplementation(() => {});
+  jest.spyOn(console, 'error').mockImplementation(() => {});
+});
+
+afterAll(() => {
+  console.log.mockRestore && console.log.mockRestore();
+  console.warn.mockRestore && console.warn.mockRestore();
+  console.error.mockRestore && console.error.mockRestore();
+});
