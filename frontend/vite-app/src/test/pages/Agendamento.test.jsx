@@ -1,6 +1,6 @@
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, expect, vi, beforeEach } from 'vitest';
 import Agendamento from '../../pages/Agendamento';
 
 // Mock do useNavigate
@@ -113,7 +113,7 @@ describe('Agendamento', () => {
 
     // Aguardar um pouco para a renderização
     await waitFor(() => {
-      expect(screen.getByText(/Selecione uma data do mês de/)).toBeInTheDocument();
+      expect(screen.getByText(/🗓️ Escolha a Data/)).toBeInTheDocument();
     });
   });
 
@@ -138,7 +138,7 @@ describe('Agendamento', () => {
 
     // Aguardar o carregamento
     await waitFor(() => {
-      expect(screen.getByText(/Selecione uma data do mês de/)).toBeInTheDocument();
+      expect(screen.getByText(/🗓️ Escolha a Data/)).toBeInTheDocument();
     });
 
     // Verificar se existem botões de data

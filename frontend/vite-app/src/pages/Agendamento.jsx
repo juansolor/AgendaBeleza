@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { capitalizeName } from '../utils/textUtils';
+import logger from '../utils/logger';
 
 export default function Agendamento({ onDateSelect = () => {} }) {
   const [selectedDate, setSelectedDate] = useState('');
@@ -17,26 +18,13 @@ export default function Agendamento({ onDateSelect = () => {} }) {
   const today = new Date();
   const year = today.getFullYear();
   const month = today.getMonth(); // 0-indexed
-  const daysInMonth = new Date(year, month + 1, 0).getDate();
   const navigate = useNavigate();
-
-  // Array de días del mes actual
-  const daysArray = Array.from({ length: daysInMonth }, (_, i) => i + 1);
 
   // Formata a data selecionada para YYYY-MM-DD
   const formatDate = (day) => {
     const mm = String(month + 1).padStart(2, '0');
     const dd = String(day).padStart(2, '0');
     return `${year}-${mm}-${dd}`;
-  };
-
-  // Obtém o nome do dia da semana em português e o número do dia da semana (0=domingo)
-  const getWeekDay = (day) => {
-    const date = new Date(year, month, day);
-    return {
-      label: date.toLocaleDateString('pt-BR', { weekday: 'short' }),
-      weekDay: date.getDay()
-    };
   };
 
   // Obtém o nome do mês em português
@@ -138,16 +126,6 @@ export default function Agendamento({ onDateSelect = () => {} }) {
     return classes.join(' ');
   };
 
-  // Función para normalizar acentos y minúsculas
-  function normalize(str) {
-    if (!str) return '';
-    return str
-      .toLowerCase()
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '')
-      .replace(/ç/g, 'c');
-  }
-
   // Función para filtrar profissionais de teste
   function filtrarProfissionaisValidos(profissionais) {
     return profissionais.filter(p => {
@@ -227,41 +205,24 @@ export default function Agendamento({ onDateSelect = () => {} }) {
     // Cargar profissionais filtrados por serviço e subcategoria
     if (servicoSelecionado) {
       const servico = servicos.find(s => String(s.id) === String(servicoSelecionado));
-      let especialidade = '';
       let tipo = null;
       if (servico?.tipoId) {
         tipo = tipos.find(t => t.id === servico.tipoId);
-        especialidade = tipo?.nome || '';
       } else if (servico?.tipo && servico.tipo.nome) {
         tipo = servico.tipo;
-        especialidade = servico.tipo.nome;
-      } else {
-        especialidade = servico?.nome || '';
       }
       // LOG extra para depuração de dados de servicio e tipo
-      console.log('[AGENDAMENTO] Objeto servico:', servico);
-      console.log('[AGENDAMENTO] Objeto tipo:', tipo);
-      // Si es Manicure y hay categoría seleccionada, usar la categoría como especialidad
-      if (servico?.nome && normalize(servico.nome) === 'manicure' && categoriaManicure) {
-        especialidade = categoriaManicure;
-      }
-      // Si es Corte de cabelo y hay subcategoria seleccionada, usar la subcategoria
-      if (servico?.nome && normalize(servico.nome).includes('cabelo') && subcategoriaSelecionada) {
-        especialidade = subcategoriaSelecionada;
-      }
-      // Busca de profissionais: garantir que massagem sempre busca por 'massagem'
-      if ((tipo && normalize(tipo.nome).includes('massagem')) || (servico?.nome && normalize(servico.nome).includes('massagem'))) {
-        especialidade = 'massagem';
-      }
+      logger.log('[AGENDAMENTO] Objeto servico:', servico);
+      logger.log('[AGENDAMENTO] Objeto tipo:', tipo);
       // LOG para depuração
-      console.log('[AGENDAMENTO] Buscando TODOS os profissionais ativos (abordagem flexível)');
+      logger.log('[AGENDAMENTO] Buscando TODOS os profissionais ativos (abordagem flexível)');
       fetch(`http://localhost:3000/profissionais?ativo=true`)
         .then(res => res.json())
         .then(data => {
-          console.log('[AGENDAMENTO] Resposta de profissionais (bruta):', data);
+          logger.log('[AGENDAMENTO] Resposta de profissionais (bruta):', data);
           // Filtrar profissionais válidos (remover os de teste)
           const profissionaisValidos = filtrarProfissionaisValidos(Array.isArray(data) ? data : []);
-          console.log('[AGENDAMENTO] Profissionais filtrados:', profissionaisValidos);
+          logger.log('[AGENDAMENTO] Profissionais filtrados:', profissionaisValidos);
           setProfissionais(profissionaisValidos);
         })
         .catch(error => {

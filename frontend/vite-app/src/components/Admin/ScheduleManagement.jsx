@@ -43,7 +43,7 @@ const ScheduleManagement = () => {
       }
       setHorariosLocais([]);
       setFeedback({ message: 'Horarios guardados correctamente', type: 'success' });
-    } catch (err) {
+    } catch {
       setFeedback({ message: 'Error al guardar horarios', type: 'error' });
     }
   };

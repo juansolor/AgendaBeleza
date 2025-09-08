@@ -47,6 +47,7 @@ export const useTypes = () => {
 
   useEffect(() => {
     fetchTypes();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return {
